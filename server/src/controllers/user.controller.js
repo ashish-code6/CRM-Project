@@ -2,31 +2,46 @@ import prisma from "../config/prisma.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-// --------------Register User-----------------
-export const registerUser = async (req, res) => {
+const createUserRecord = async ({ name, email, password, role }) => {
+  const existingUser = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (existingUser) {
+    const error = new Error("User already exists");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  return prisma.user.create({
+    data: {
+      name,
+      email,
+      password: hashedPassword,
+      role,
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+};
+
+export const createUser = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role = "SALES" } = req.body;
 
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (existingUser) {
-      return res.status(400).json({
-        message: "User already exists",
-      });
+    if (req.user.role === "MANAGER" && role !== "SALES") {
+      return res.status(403).json({ message: "Managers can create SALES users only" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        role,
-      },
-    });
+    const user = await createUserRecord({ name, email, password, role });
 
     res.status(201).json({
       message: "User created successfully",
@@ -34,9 +49,56 @@ export const registerUser = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({
-      message: "Server Error",
+    res.status(error.statusCode || 500).json({
+      message: error.message || "Server Error",
     });
+  }
+};
+
+export const getUsers = async (req, res) => {
+  try {
+    const where = req.user.role === "MANAGER" ? { role: "SALES" } : {};
+    const users = await prisma.user.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    res.json(users);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (id === req.user.id) {
+      return res.status(400).json({ message: "You cannot delete your own account" });
+    }
+
+    await prisma.lead.updateMany({
+      where: { assignedToId: id },
+      data: { assignedToId: null },
+    });
+
+    await prisma.user.delete({
+      where: { id },
+    });
+
+    res.json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server Error" });
   }
 };
 
@@ -65,7 +127,7 @@ export const loginUser = async (req, res) => {
 
     // 3. token create
     const token = jwt.sign(
-      { id: user.id, role: user.role },
+      { id: user.id, name: user.name, email: user.email, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
@@ -73,6 +135,12 @@ export const loginUser = async (req, res) => {
     return res.json({
       message: "Login successful",
       token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
     });
   } catch (err) {
     return res.status(500).json({ message: "Server error" });

@@ -26,8 +26,8 @@ router.get(
   authorizeRoles("ADMIN", "MANAGER", "SALES"),
   getLeads
 );
-router.get("/:id", authMiddleware, getLeadById);
-router.put("/:id", authMiddleware, updateLead);
+router.get("/:id", authMiddleware, authorizeRoles("ADMIN", "MANAGER", "SALES"), getLeadById);
+router.put("/:id", authMiddleware, authorizeRoles("ADMIN", "MANAGER", "SALES"), updateLead);
 router.delete(
   "/:id",
   authMiddleware,

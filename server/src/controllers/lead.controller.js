@@ -31,7 +31,9 @@ export const createLead = async (req, res) => {
 // --------------Get ALl Leads----------------
 export const getLeads = async (req, res) => {
   try {
+    const where = req.user.role === "SALES" ? { assignedToId: req.user.id } : {};
     const leads = await prisma.lead.findMany({
+      where,
       orderBy: { createdAt: "desc" },
     });
 
@@ -55,6 +57,12 @@ export const getLeadById = async (req, res) => {
     if (!lead) {
       return res.status(404).json({
         message: "Lead not found",
+      });
+    }
+
+    if (req.user.role === "SALES" && lead.assignedToId !== req.user.id) {
+      return res.status(403).json({
+        message: "Access denied",
       });
     }
 
@@ -86,6 +94,30 @@ export const updateLead = async (req, res) => {
         success: false,
         message: "Lead not found",
       });
+    }
+
+    if (req.user.role === "SALES") {
+      if (existingLead.assignedToId !== req.user.id) {
+        return res.status(403).json({
+          success: false,
+          message: "Access denied",
+        });
+      }
+
+      const allowedStatuses = ["CONTACTED", "QUALIFIED", "CONVERTED", "LOST"];
+      if (status === undefined || Object.keys(req.body).some((key) => key !== "status")) {
+        return res.status(403).json({
+          success: false,
+          message: "Sales users can update lead status only",
+        });
+      }
+
+      if (!allowedStatuses.includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid sales status",
+        });
+      }
     }
 
     const updateData = {};
@@ -189,6 +221,12 @@ export const assignLead = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         message: "User not found",
+      });
+    }
+
+    if (user.role !== "SALES") {
+      return res.status(400).json({
+        message: "Leads can be assigned to SALES users only",
       });
     }
 
