@@ -1,193 +1,268 @@
 # CRM System Backend
 
-This is a simple CRM (Customer Relationship Management) backend built with **Node.js**, **Express.js**, **PostgreSQL**, and **Prisma ORM**.
+Express backend for a role-based CRM system. It manages users, leads, lead assignment, dashboard stats, CSV imports, email notifications, and audit logs.
 
-The main goal of this project is to manage customer leads, assign them to sales team members, track activities, and provide useful dashboard statistics.
-
----
-
-# Tech Stack
+## Tech Stack
 
 - Node.js
 - Express.js
 - PostgreSQL
 - Prisma ORM
-- JWT Authentication
+- JWT authentication
 - Bcrypt
 - Nodemailer
 - Multer
 - CSV Parser
 
----
+## Features
 
-# Features
+- Login with JWT
+- Protected API routes
+- Role-based authorization
+- Admin/Manager user creation
+- Lead CRUD
+- Lead assignment to Sales users
+- Email notification when a lead is assigned
+- Dashboard statistics
+- CSV lead import
+- Audit logging for lead actions
+- Audit log search
 
-### 🔐 Authentication
+## Role Permissions
 
-- User Registration
-- User Login
-- JWT Authentication
-- Password Hashing using bcrypt
-- Protected Routes
+### Admin
 
-Only authenticated users can access the CRM APIs.
+- Create Admin, Manager, and Sales users
+- Delete users
+- Create, view, update, assign, and delete leads
+- Upload CSV leads
+- Send test email
+- View dashboard
+- View audit logs
 
----
+### Manager
 
-### 👥 User Roles
+- Create Sales users only
+- Create, view, update, and assign leads
+- Upload CSV leads
+- Send test email
+- View dashboard
+- Cannot delete users
+- Cannot delete leads
+- Cannot view audit logs
 
-The system supports three roles:
+### Sales
 
-- Admin
-- Manager
-- Sales
+- Login
+- View assigned leads only
+- Update assigned lead status only
+- Cannot create users
+- Cannot create leads
+- Cannot assign leads
+- Cannot delete leads
+- Cannot upload CSV
+- Cannot view audit logs
 
-These roles can be extended later for role-based permissions.
+## Database Models
 
----
+Main Prisma models:
 
-### 📋 Lead Management
+- `User`
+- `Lead`
+- `AuditLog`
 
-Implemented complete CRUD operations for leads.
+## Environment Variables
 
-- Create Lead
-- View All Leads
-- View Lead Details
-- Update Lead
-- Delete Lead
+Create `server/.env`:
 
-This allows users to manage customer information easily.
-
----
-
-### 🎯 Lead Assignment
-
-Managers can assign leads to sales team members.
-
-Whenever a lead is assigned:
-
-- The lead is updated in the database.
-- A notification email is sent to the assigned user.
-- The activity is stored in the audit logs.
-
----
-
-### 📊 Dashboard
-
-A dashboard API provides quick insights such as:
-
-- Total Leads
-- New Leads
-- Assigned Leads
-- Converted Leads
-
-This data can be used to build dashboard cards and charts on the frontend.
-
----
-
-### 📧 Email Notifications
-
-Nodemailer is used to send emails.
-
-When a lead is assigned to a sales user, an email notification is automatically sent.
-
----
-
-### 📂 CSV Upload
-
-Users can upload a CSV file containing lead data.
-
-The application reads the file and imports all valid records into the PostgreSQL database.
-
-This makes bulk lead import quick and easy.
-
----
-
-### 📝 Audit Logs
-
-Every important action is recorded.
-
-Currently logged actions include:
-
-- Create Lead
-- Update Lead
-- Delete Lead
-- Assign Lead
-
-This helps track user activities inside the CRM.
-
----
-
-# Database
-
-The project uses **PostgreSQL** as the database and **Prisma ORM** for database operations.
-
-Main models:
-
-- User
-- Lead
-- AuditLog
-
----
-
-# Project Flow
-
-```text
-User Register
-      ↓
-User Login
-      ↓
-JWT Token Generated
-      ↓
-Access Protected APIs
-      ↓
-Create / Update / Delete Leads
-      ↓
-Assign Lead
-      ↓
-Email Notification Sent
-      ↓
-Audit Log Created
-      ↓
-Dashboard Statistics Updated
+```env
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DATABASE
+JWT_SECRET=your_jwt_secret
+EMAIL_USER=your_email@example.com
+EMAIL_PASS=your_email_app_password
+PORT=5000
 ```
 
----
+`PORT` is optional. The server defaults to `5000`.
 
-# Installation
+## Installation
 
 ```bash
-git clone <repository-url>
-
-cd crm-system/server
-
+cd server
 npm install
 ```
 
----
+## Prisma Setup
 
-# Environment Variables
+Generate Prisma client:
 
-Create a `.env` file and add:
-
-```env
-DATABASE_URL=
-
-JWT_SECRET=
-
-EMAIL_USER=
-
-EMAIL_PASS=
+```bash
+npx prisma generate
 ```
 
----
+Run migrations:
 
-# Run the Project
+```bash
+npx prisma migrate dev
+```
+
+Open Prisma Studio:
+
+```bash
+npx prisma studio
+```
+
+## Run Server
 
 ```bash
 npm run dev
 ```
 
----
+Default API URL:
 
+```text
+http://localhost:5000
+```
 
+## API Routes
+
+### Auth and Users
+
+```text
+POST   /api/users/login
+GET    /api/users
+POST   /api/users
+DELETE /api/users/:id
+```
+
+Notes:
+
+- There is no public registration route.
+- Admin and Manager create users from the protected user API.
+- Manager can create Sales users only.
+- Admin can delete users.
+
+### Leads
+
+```text
+POST   /api/leads
+GET    /api/leads
+GET    /api/leads/:id
+PUT    /api/leads/:id
+DELETE /api/leads/:id
+PATCH  /api/leads/:leadId/assign
+```
+
+Notes:
+
+- Admin and Manager can create and assign leads.
+- Admin can delete leads.
+- Sales users see assigned leads only.
+- Sales users can update lead status only.
+
+### Dashboard
+
+```text
+GET /api/dashboard/stats
+```
+
+Sales dashboard stats are scoped to assigned leads.
+
+### CSV
+
+```text
+POST /api/csv/upload
+```
+
+Requires `multipart/form-data` with field name:
+
+```text
+file
+```
+
+Expected CSV columns:
+
+```text
+name,email,phone,company
+```
+
+Admin and Manager only.
+
+### Email
+
+```text
+POST /api/email/test
+```
+
+Request body:
+
+```json
+{
+  "to": "user@example.com"
+}
+```
+
+Admin and Manager only.
+
+### Audit Logs
+
+```text
+GET /api/audit-logs
+```
+
+Admin only.
+
+Supports query params:
+
+```text
+page=1
+limit=10
+search=lead
+```
+
+Search can match action, entity, entity ID, user ID, username, email, or role.
+
+## Lead Assignment Email Flow
+
+```text
+Admin/Manager assigns lead
+        |
+PATCH /api/leads/:leadId/assign
+        |
+Lead assigned to Sales user
+        |
+Email notification sent
+        |
+Audit log created
+```
+
+If email sending fails, the lead assignment still succeeds.
+
+## Audit Logged Actions
+
+- `CREATE` lead
+- `UPDATE` lead
+- `DELETE` lead
+- `ASSIGN` lead
+
+## Project Flow
+
+```text
+Admin creates users
+        |
+User logs in
+        |
+JWT token generated
+        |
+Protected API access
+        |
+Lead management
+        |
+Lead assignment
+        |
+Email notification
+        |
+Audit log
+        |
+Dashboard stats
+```

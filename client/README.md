@@ -1,16 +1,116 @@
-# React + Vite
+# CRM System Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React frontend for the CRM system. It connects to the Express backend and provides role-based screens for Admin, Manager, and Sales users.
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React
+- Vite
+- React Router
+- Axios
+- Tailwind CSS
+- React Hot Toast
+- Lucide React icons
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- JWT login
+- Protected routes
+- Role-based navigation
+- Dashboard cards
+- Lead list, create, edit, assign, and delete actions
+- Sales users can view assigned leads and update status
+- User management for Admin and Manager
+- CSV lead upload
+- Test email tool
+- Audit log table for Admin
+- Pagination component
+- Client-side form validation
 
-## Expanding the ESLint configuration
+## Role Access
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Admin
+
+- Create Admin, Manager, and Sales users
+- Delete users
+- Create, update, assign, and delete leads
+- View dashboard
+- Upload CSV leads
+- Send test email
+- View audit logs
+
+### Manager
+
+- Create Sales users
+- Create leads
+- Assign leads to Sales users
+- Update leads
+- View dashboard
+- Upload CSV leads
+- Send test email
+
+### Sales
+
+- Login
+- View assigned leads
+- Update assigned lead status
+- Cannot create users
+- Cannot assign leads
+- Cannot delete leads
+
+
+## Environment Variables
+
+Create `client/.env` when the backend URL is different from the default.
+
+```env
+VITE_API_URL=http://localhost:5000/api
+```
+
+If this value is not set, the frontend uses:
+
+```text
+http://localhost:5000/api
+```
+
+## Installation
+
+```bash
+cd client
+npm install
+```
+
+## Run Development Server
+
+```bash
+npm run dev
+```
+
+Default frontend URL:
+
+```text
+http://localhost:5173
+```
+
+## Build
+
+```bash
+npm run build
+```
+
+## Lint
+
+```bash
+npm run lint
+```
+
+## Backend Requirement
+
+Start the backend server before using the frontend:
+
+```bash
+cd server
+npm run dev
+```
+
+The frontend expects a valid JWT from the backend login API.
