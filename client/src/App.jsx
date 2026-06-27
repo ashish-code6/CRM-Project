@@ -11,8 +11,11 @@ import Users from "./pages/Users";
 import Profile from "./pages/Profile";
 import Tools from "./pages/Tools";
 import AuditLogs from "./pages/AuditLogs";
+import Billing from "./pages/Billing";
+import CreateInvoice from "./pages/CreateInvoice";
+import EditInvoice from "./pages/EditInvoice";
 import { getCurrentUser, getToken } from "./services/auth.service";
-import { canCreateLeads, canManageUsers, canViewAuditLogs } from "./utils/permissions";
+import { canCreateLeads, canManageBilling, canManageUsers, canViewAuditLogs } from "./utils/permissions";
 
 function ProtectedRoute() {
   if (!getToken()) {
@@ -47,6 +50,9 @@ export default function App() {
           <Route path="/leads" element={<Leads />} />
           <Route path="/leads/create" element={<CreateLead />} />
           <Route path="/leads/:id/edit" element={<EditLead />} />
+          <Route path="/billing" element={<RoleRoute allow={canManageBilling}><Billing /></RoleRoute>} />
+          <Route path="/billing/create" element={<RoleRoute allow={canManageBilling}><CreateInvoice /></RoleRoute>} />
+          <Route path="/billing/:id/edit" element={<RoleRoute allow={canManageBilling}><EditInvoice /></RoleRoute>} />
           <Route path="/tools" element={<RoleRoute allow={canCreateLeads}><Tools /></RoleRoute>} />
           <Route path="/users" element={<RoleRoute allow={canManageUsers}><Users /></RoleRoute>} />
           <Route path="/audit-logs" element={<RoleRoute allow={canViewAuditLogs}><AuditLogs /></RoleRoute>} />

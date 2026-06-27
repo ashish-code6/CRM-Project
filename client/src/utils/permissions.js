@@ -12,6 +12,10 @@ export const canDeleteUsers = (user) => user?.role === "ADMIN";
 
 export const canViewAuditLogs = (user) => user?.role === "ADMIN";
 
+export const canManageBilling = (user) => ["ADMIN", "MANAGER"].includes(user?.role);
+
+export const canDeleteInvoices = (user) => user?.role === "ADMIN";
+
 export const allowedUserRolesToCreate = (user) => {
   if (user?.role === "ADMIN") return ["ADMIN", "MANAGER", "SALES"];
   if (user?.role === "MANAGER") return ["SALES"];

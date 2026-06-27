@@ -38,9 +38,34 @@ model Lead {
 
   assignedToId String?
   assignedTo   User?   @relation(fields: [assignedToId], references: [id])
+  invoices     Invoice[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+enum InvoiceStatus {
+  PAID
+  PENDING
+  OVERDUE
+}
+
+model Invoice {
+  id           String        @id @default(cuid())
+  invoiceNo    String        @unique
+  customerName String
+  company      String?
+  amount       Float
+  gst          Float
+  total        Float
+  status       InvoiceStatus @default(PENDING)
+  dueDate      DateTime
+
+  leadId       String?
+  lead         Lead?         @relation(fields: [leadId], references: [id])
+
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 }
 //--------------AuditLog--------------------
 model AuditLog {
