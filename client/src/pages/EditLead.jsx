@@ -26,7 +26,7 @@ export default function EditLead() {
     if (!canAssign) return;
 
     getUsers()
-      .then((data) => setSalesUsers(data.filter((item) => item.role === "SALES")))
+      .then((result) => setSalesUsers((result.data || []).filter((item) => item.role === "SALES")))
       .catch(() => setSalesUsers([]));
   }, [canAssign]);
 

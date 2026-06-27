@@ -1,13 +1,14 @@
-import { BarChart3, BriefcaseBusiness, LayoutDashboard, UploadCloud, UserRoundCog } from "lucide-react";
+import { BarChart3, BriefcaseBusiness, ClipboardList, LayoutDashboard, UploadCloud, UserRoundCog } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { getCurrentUser } from "../services/auth.service";
-import { canCreateLeads, canManageUsers } from "../utils/permissions";
+import { canCreateLeads, canManageUsers, canViewAuditLogs } from "../utils/permissions";
 
 const links = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/leads", label: "Leads", icon: BriefcaseBusiness },
   { to: "/tools", label: "CSV & Email", icon: UploadCloud },
   { to: "/users", label: "Users", icon: UserRoundCog },
+  { to: "/audit-logs", label: "Audit Logs", icon: ClipboardList },
   { to: "/profile", label: "Profile", icon: BarChart3 },
 ];
 
@@ -16,6 +17,7 @@ export default function Sidebar() {
   const visibleLinks = links.filter((link) => {
     if (link.to === "/users") return canManageUsers(user);
     if (link.to === "/tools") return canCreateLeads(user);
+    if (link.to === "/audit-logs") return canViewAuditLogs(user);
     return true;
   });
 

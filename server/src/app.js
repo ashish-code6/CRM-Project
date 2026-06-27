@@ -6,6 +6,7 @@ import leadRoutes from "./routes/lead.routes.js";
 import csvRoutes from "./routes/csv.routes.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
 import emailRoutes from "./routes/email.routes.js";
+import auditRoutes from "./routes/audit.routes.js";
 
 const app = express();
 
@@ -17,9 +18,10 @@ app.use("/api/leads", leadRoutes);
 app.use("/api/csv", csvRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/email", emailRoutes);
+app.use("/api/audit-logs", auditRoutes);
 
 app.get("/", (req, res) => {
-  res.json({ message: "CRM API is running 🚀" });
+  res.json({ message: "CRM API is running " });
 });
 
 export default app;

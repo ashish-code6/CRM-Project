@@ -10,8 +10,9 @@ import EditLead from "./pages/EditLead";
 import Users from "./pages/Users";
 import Profile from "./pages/Profile";
 import Tools from "./pages/Tools";
+import AuditLogs from "./pages/AuditLogs";
 import { getCurrentUser, getToken } from "./services/auth.service";
-import { canCreateLeads, canManageUsers } from "./utils/permissions";
+import { canCreateLeads, canManageUsers, canViewAuditLogs } from "./utils/permissions";
 
 function ProtectedRoute() {
   if (!getToken()) {
@@ -48,6 +49,7 @@ export default function App() {
           <Route path="/leads/:id/edit" element={<EditLead />} />
           <Route path="/tools" element={<RoleRoute allow={canCreateLeads}><Tools /></RoleRoute>} />
           <Route path="/users" element={<RoleRoute allow={canManageUsers}><Users /></RoleRoute>} />
+          <Route path="/audit-logs" element={<RoleRoute allow={canViewAuditLogs}><AuditLogs /></RoleRoute>} />
           <Route path="/profile" element={<Profile />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

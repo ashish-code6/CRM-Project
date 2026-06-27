@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Trash2, UserPlus } from "lucide-react";
 import Loader from "../components/Loader";
+import Pagination from "../components/Pagination";
 import { getCurrentUser } from "../services/auth.service";
 import { createUser, deleteUser, getUsers } from "../services/user.service";
 import { allowedUserRolesToCreate, canDeleteUsers, canManageUsers } from "../utils/permissions";
@@ -11,6 +12,8 @@ export default function Users() {
   const canManage = canManageUsers(user);
   const allowedRoles = allowedUserRolesToCreate(user);
   const [users, setUsers] = useState([]);
+  const [pagination, setPagination] = useState(null);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(canManage);
   const [form, setForm] = useState({ name: "", email: "", password: "", role: allowedRoles[0] || "SALES" });
   const [saving, setSaving] = useState(false);
@@ -22,9 +25,12 @@ export default function Users() {
       return undefined;
     }
 
-    getUsers()
-      .then((data) => {
-        if (active) setUsers(data);
+    getUsers({ page, limit: 10 })
+      .then((result) => {
+        if (active) {
+          setUsers(result.data || []);
+          setPagination(result.pagination);
+        }
       })
       .catch((error) => toast.error(error.response?.data?.message || "Could not load users"))
       .finally(() => {
@@ -34,7 +40,7 @@ export default function Users() {
     return () => {
       active = false;
     };
-  }, [canManage]);
+  }, [canManage, page]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -43,6 +49,7 @@ export default function Users() {
       const result = await createUser(form);
       toast.success("User created");
       setUsers((current) => [result.user, ...current]);
+      setPagination((current) => current ? { ...current, total: current.total + 1 } : current);
       setForm({ name: "", email: "", password: "", role: allowedRoles[0] || "SALES" });
     } catch (error) {
       toast.error(error.response?.data?.message || "Could not create user");
@@ -57,6 +64,7 @@ export default function Users() {
       await deleteUser(id);
       toast.success("User deleted");
       setUsers((current) => current.filter((item) => item.id !== id));
+      setPagination((current) => current ? { ...current, total: Math.max(current.total - 1, 0) } : current);
     } catch (error) {
       toast.error(error.response?.data?.message || "Could not delete user");
     }
@@ -121,23 +129,35 @@ export default function Users() {
         {loading ? (
           <Loader label="Loading users" />
         ) : (
-          <div className="divide-y divide-slate-100">
-            {users.map((item) => (
-              <div className="flex items-center justify-between gap-3 p-4" key={item.id}>
-                <div className="min-w-0">
-                  <p className="font-medium text-slate-950">{item.name}</p>
-                  <p className="break-all text-sm text-slate-500">{item.email}</p>
-                  <p className="mt-1 text-xs font-semibold text-teal-700">{item.role}</p>
+          <>
+            <div className="divide-y divide-slate-100">
+              {users.map((item) => (
+                <div className="flex items-center justify-between gap-3 p-4" key={item.id}>
+                  <div className="min-w-0">
+                    <p className="font-medium text-slate-950">{item.name}</p>
+                    <p className="break-all text-sm text-slate-500">{item.email}</p>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <span className="text-xs font-semibold text-teal-700">{item.role}</span>
+                      {item.role === "SALES" && (
+                        <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">
+                          {item.assignedLeadCount || 0} assigned leads
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {canDeleteUsers(user) && item.id !== user.id && (
+                    <button className="icon-btn text-rose-600 hover:bg-rose-50" onClick={() => handleDelete(item.id)} type="button" aria-label={`Delete ${item.name}`}>
+                      <Trash2 size={16} />
+                    </button>
+                  )}
                 </div>
-                {canDeleteUsers(user) && item.id !== user.id && (
-                  <button className="icon-btn text-rose-600 hover:bg-rose-50" onClick={() => handleDelete(item.id)} type="button" aria-label={`Delete ${item.name}`}>
-                    <Trash2 size={16} />
-                  </button>
-                )}
-              </div>
-            ))}
-            {!users.length && <p className="p-5 text-sm text-slate-500">No users found.</p>}
-          </div>
+              ))}
+              {!users.length && <p className="p-5 text-sm text-slate-500">No users found.</p>}
+            </div>
+            <div className="border-t border-slate-200 p-4">
+              <Pagination pagination={pagination} onPageChange={setPage} />
+            </div>
+          </>
         )}
       </section>
     </div>
