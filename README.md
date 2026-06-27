@@ -316,6 +316,8 @@ MERN Stack Developer
 ---
 
 ⭐ If you found this project useful, consider giving it a star on GitHub!
+for Teting API use POsTMAN
+<img width="956" height="470" alt="image" src="https://github.com/user-attachments/assets/b9990659-f08d-4e42-9c1a-375b2aaf3bc7" />
 Login 
 <img width="941" height="470" alt="image" src="https://github.com/user-attachments/assets/82aabd36-0398-4c3d-8e2d-72653bdeab57" />
 Dashboard
