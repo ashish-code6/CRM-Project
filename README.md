@@ -316,7 +316,23 @@ MERN Stack Developer
 ---
 
 ⭐ If you found this project useful, consider giving it a star on GitHub!
+Login 
 <img width="941" height="470" alt="image" src="https://github.com/user-attachments/assets/82aabd36-0398-4c3d-8e2d-72653bdeab57" />
+Dashboard
+<img width="958" height="469" alt="image" src="https://github.com/user-attachments/assets/0c025aff-0098-4ae6-b014-8de713d400f7" />
+Leads deatils
+<img width="953" height="434" alt="image" src="https://github.com/user-attachments/assets/b02ee2c1-7744-4d84-8a96-a90d6d2d30e4" />
+csv file and sending mail
+<img width="950" height="418" alt="image" src="https://github.com/user-attachments/assets/28f97cb9-6867-40f2-a211-265a5053d0fd" />
+create a user and deatils of user
+<img width="944" height="437" alt="image" src="https://github.com/user-attachments/assets/3304a012-aa67-45c9-9c22-caccb1429250" />
+Audit logs 
+<img width="935" height="437" alt="image" src="https://github.com/user-attachments/assets/757720e7-dc1e-48a1-ab89-f96c42f93ee2" />
+profile
+<img width="948" height="437" alt="image" src="https://github.com/user-attachments/assets/012003a7-bf83-45fa-b0ec-e4a47c5a0f99" />
+
+
+
 
 
 
