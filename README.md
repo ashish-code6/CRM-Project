@@ -259,19 +259,7 @@ npm run dev
 
 # 🔑 Environment Variables
 
-### Backend (.env)
 
-```env
-DATABASE_URL=
-
-JWT_SECRET=
-
-EMAIL_USER=
-
-EMAIL_PASS=
-
-PORT=5000
-```
 
 ### Frontend (.env)
 
