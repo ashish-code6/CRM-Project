@@ -1,7 +1,9 @@
 import apiClient from "../utils/axios";
 
-export const getUsers = async () => {
-  const { data } = await apiClient.get("/users");
+export const getUsers = async ({ page = 1, limit = 10, role = "", all = false } = {}) => {
+  const { data } = await apiClient.get("/users", {
+    params: { page, limit, role, all },
+  });
   return data;
 };
 

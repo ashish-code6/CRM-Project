@@ -3,16 +3,27 @@ import { Navigate, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { ArrowRight, LockKeyhole } from "lucide-react";
 import { getToken, login } from "../services/auth.service";
+import { isEmail, minLength, required } from "../utils/validation";
 
 export default function Login() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
   if (getToken()) return <Navigate to="/dashboard" replace />;
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    const nextErrors = {};
+    if (!required(form.email)) nextErrors.email = "Email is required";
+    else if (!isEmail(form.email)) nextErrors.email = "Enter a valid email address";
+    if (!required(form.password)) nextErrors.password = "Password is required";
+    else if (!minLength(form.password, 6)) nextErrors.password = "Password must be at least 6 characters";
+
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) return;
+
     setLoading(true);
     try {
       await login(form);
@@ -47,11 +58,29 @@ export default function Login() {
           <div className="space-y-4">
             <label className="space-y-2">
               <span className="text-sm font-medium text-slate-700">Email</span>
-              <input className="field" onChange={(e) => setForm({ ...form, email: e.target.value })} required type="email" value={form.email} />
+              <input
+                className={`field ${errors.email ? "field-error" : ""}`}
+                onChange={(e) => {
+                  setForm({ ...form, email: e.target.value });
+                  setErrors({ ...errors, email: "" });
+                }}
+                type="email"
+                value={form.email}
+              />
+              {errors.email && <span className="error-text">{errors.email}</span>}
             </label>
             <label className="space-y-2">
               <span className="text-sm font-medium text-slate-700">Password</span>
-              <input className="field" onChange={(e) => setForm({ ...form, password: e.target.value })} required type="password" value={form.password} />
+              <input
+                className={`field ${errors.password ? "field-error" : ""}`}
+                onChange={(e) => {
+                  setForm({ ...form, password: e.target.value });
+                  setErrors({ ...errors, password: "" });
+                }}
+                type="password"
+                value={form.password}
+              />
+              {errors.password && <span className="error-text">{errors.password}</span>}
             </label>
           </div>
           <button className="btn-primary mt-6 w-full justify-center" disabled={loading} type="submit">

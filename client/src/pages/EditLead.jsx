@@ -25,7 +25,7 @@ export default function EditLead() {
   useEffect(() => {
     if (!canAssign) return;
 
-    getUsers()
+    getUsers({ role: "SALES", all: true })
       .then((result) => setSalesUsers((result.data || []).filter((item) => item.role === "SALES")))
       .catch(() => setSalesUsers([]));
   }, [canAssign]);

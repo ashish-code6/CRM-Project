@@ -57,21 +57,73 @@ export const createUser = async (req, res) => {
 
 export const getUsers = async (req, res) => {
   try {
-    const where = req.user.role === "MANAGER" ? { role: "SALES" } : {};
-    const users = await prisma.user.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
+    const role = req.query.role ? String(req.query.role).toUpperCase() : "";
+    const all = req.query.all === "true";
+    const page = Math.max(Number(req.query.page) || 1, 1);
+    const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 100);
+    const skip = (page - 1) * limit;
+    const where = {
+      ...(req.user.role === "MANAGER" ? { role: "SALES" } : {}),
+      ...(role ? { role } : {}),
+    };
+    const select = {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      createdAt: true,
+      updatedAt: true,
+      _count: {
+        select: {
+          assignedLeads: true,
+        },
+      },
+    };
+
+    if (all) {
+      const users = await prisma.user.findMany({
+        where,
+        orderBy: { name: "asc" },
+        select,
+      });
+
+      return res.json({
+        data: users.map(({ _count, ...user }) => ({
+          ...user,
+          assignedLeadCount: _count.assignedLeads,
+        })),
+        pagination: {
+          page: 1,
+          limit: users.length,
+          total: users.length,
+          totalPages: 1,
+        },
+      });
+    }
+
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+        select,
+      }),
+      prisma.user.count({ where }),
+    ]);
+
+    res.json({
+      data: users.map(({ _count, ...user }) => ({
+        ...user,
+        assignedLeadCount: _count.assignedLeads,
+      })),
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit) || 1,
       },
     });
-
-    res.json(users);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Server Error" });

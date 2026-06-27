@@ -6,6 +6,7 @@ import Pagination from "../components/Pagination";
 import { getCurrentUser } from "../services/auth.service";
 import { createUser, deleteUser, getUsers } from "../services/user.service";
 import { allowedUserRolesToCreate, canDeleteUsers, canManageUsers } from "../utils/permissions";
+import { isEmail, minLength, required } from "../utils/validation";
 
 export default function Users() {
   const user = getCurrentUser();
@@ -16,6 +17,7 @@ export default function Users() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(canManage);
   const [form, setForm] = useState({ name: "", email: "", password: "", role: allowedRoles[0] || "SALES" });
+  const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -44,6 +46,17 @@ export default function Users() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    const nextErrors = {};
+    if (!required(form.name)) nextErrors.name = "Name is required";
+    if (!required(form.email)) nextErrors.email = "Email is required";
+    else if (!isEmail(form.email)) nextErrors.email = "Enter a valid email address";
+    if (!required(form.password)) nextErrors.password = "Password is required";
+    else if (!minLength(form.password, 6)) nextErrors.password = "Password must be at least 6 characters";
+    if (!allowedRoles.includes(form.role)) nextErrors.role = "Select a valid role";
+
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) return;
+
     setSaving(true);
     try {
       const result = await createUser(form);
@@ -51,6 +64,7 @@ export default function Users() {
       setUsers((current) => [result.user, ...current]);
       setPagination((current) => current ? { ...current, total: current.total + 1 } : current);
       setForm({ name: "", email: "", password: "", role: allowedRoles[0] || "SALES" });
+      setErrors({});
     } catch (error) {
       toast.error(error.response?.data?.message || "Could not create user");
     } finally {
@@ -92,25 +106,29 @@ export default function Users() {
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="space-y-2">
               <span className="text-sm font-medium text-slate-700">Name</span>
-              <input className="field" onChange={(e) => setForm({ ...form, name: e.target.value })} required value={form.name} />
+              <input className={`field ${errors.name ? "field-error" : ""}`} onChange={(e) => { setForm({ ...form, name: e.target.value }); setErrors({ ...errors, name: "" }); }} value={form.name} />
+              {errors.name && <span className="error-text">{errors.name}</span>}
             </label>
             <label className="space-y-2">
               <span className="text-sm font-medium text-slate-700">Email</span>
-              <input className="field" onChange={(e) => setForm({ ...form, email: e.target.value })} required type="email" value={form.email} />
+              <input className={`field ${errors.email ? "field-error" : ""}`} onChange={(e) => { setForm({ ...form, email: e.target.value }); setErrors({ ...errors, email: "" }); }} type="email" value={form.email} />
+              {errors.email && <span className="error-text">{errors.email}</span>}
             </label>
             <label className="space-y-2">
               <span className="text-sm font-medium text-slate-700">Password</span>
-              <input className="field" onChange={(e) => setForm({ ...form, password: e.target.value })} required type="password" value={form.password} />
+              <input className={`field ${errors.password ? "field-error" : ""}`} onChange={(e) => { setForm({ ...form, password: e.target.value }); setErrors({ ...errors, password: "" }); }} type="password" value={form.password} />
+              {errors.password && <span className="error-text">{errors.password}</span>}
             </label>
             <label className="space-y-2">
               <span className="text-sm font-medium text-slate-700">Role</span>
-              <select className="field" onChange={(e) => setForm({ ...form, role: e.target.value })} value={form.role}>
+              <select className={`field ${errors.role ? "field-error" : ""}`} onChange={(e) => { setForm({ ...form, role: e.target.value }); setErrors({ ...errors, role: "" }); }} value={form.role}>
                 {allowedRoles.map((role) => (
                   <option key={role} value={role}>
                     {role}
                   </option>
                 ))}
               </select>
+              {errors.role && <span className="error-text">{errors.role}</span>}
             </label>
           </div>
           <div className="mt-6 flex justify-end">

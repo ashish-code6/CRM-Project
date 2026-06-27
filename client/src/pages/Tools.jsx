@@ -3,20 +3,28 @@ import toast from "react-hot-toast";
 import { Mail, UploadCloud } from "lucide-react";
 import { uploadLeadsCSV } from "../services/csv.service";
 import { sendTestEmail } from "../services/email.service";
+import { isEmail, required } from "../utils/validation";
 
 export default function Tools() {
   const [file, setFile] = useState(null);
+  const [uploadError, setUploadError] = useState("");
   const [uploading, setUploading] = useState(false);
   const [to, setTo] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [sending, setSending] = useState(false);
 
   const handleUpload = async (event) => {
     event.preventDefault();
     if (!file) {
-      toast.error("Select a CSV file first");
+      setUploadError("Select a CSV file first");
+      return;
+    }
+    if (!file.name.toLowerCase().endsWith(".csv")) {
+      setUploadError("Only .csv files are allowed");
       return;
     }
 
+    setUploadError("");
     setUploading(true);
     try {
       const result = await uploadLeadsCSV(file);
@@ -32,6 +40,16 @@ export default function Tools() {
 
   const handleEmail = async (event) => {
     event.preventDefault();
+    if (!required(to)) {
+      setEmailError("Recipient email is required");
+      return;
+    }
+    if (!isEmail(to)) {
+      setEmailError("Enter a valid email address");
+      return;
+    }
+
+    setEmailError("");
     setSending(true);
     try {
       const result = await sendTestEmail(to);
@@ -64,9 +82,13 @@ export default function Tools() {
           <input
             accept=".csv,text/csv"
             className="block w-full rounded-md border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600 file:mr-4 file:rounded-md file:border-0 file:bg-slate-950 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
-            onChange={(event) => setFile(event.target.files?.[0] || null)}
+            onChange={(event) => {
+              setFile(event.target.files?.[0] || null);
+              setUploadError("");
+            }}
             type="file"
           />
+          {uploadError && <span className="error-text mt-2">{uploadError}</span>}
           <button className="btn-primary mt-5" disabled={uploading} type="submit">
             <UploadCloud size={17} />
             {uploading ? "Uploading..." : "Upload CSV"}
@@ -85,7 +107,16 @@ export default function Tools() {
           </div>
           <label className="space-y-2">
             <span className="text-sm font-medium text-slate-700">Recipient email</span>
-            <input className="field" onChange={(event) => setTo(event.target.value)} required type="email" value={to} />
+            <input
+              className={`field ${emailError ? "field-error" : ""}`}
+              onChange={(event) => {
+                setTo(event.target.value);
+                setEmailError("");
+              }}
+              type="email"
+              value={to}
+            />
+            {emailError && <span className="error-text">{emailError}</span>}
           </label>
           <button className="btn-primary mt-5" disabled={sending} type="submit">
             <Mail size={17} />
