@@ -316,3 +316,14 @@ MERN Stack Developer
 ---
 
 ⭐ If you found this project useful, consider giving it a star on GitHub!
+<img width="941" height="470" alt="image" src="https://github.com/user-attachments/assets/82aabd36-0398-4c3d-8e2d-72653bdeab57" />
+
+
+
+
+
+
+
+
+
+
