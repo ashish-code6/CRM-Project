@@ -157,34 +157,94 @@ export const deleteUser = async (req, res) => {
 // -----------Login User--------------------------
 
 
+// export const loginUser = async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+
+//     // 1. user check
+//     const user = await prisma.user.findUnique({
+//       where: { email },
+//     });
+
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     // 2. password check
+//     const isValid = await bcrypt.compare(password, user.password);
+
+//     if (!isValid) {
+//       return res.status(401).json({ message: "Invalid credentials" });
+//     }
+
+//     // 3. token create
+//     const token = jwt.sign(
+//       { id: user.id, name: user.name, email: user.email, role: user.role },
+//       process.env.JWT_SECRET,
+//       { expiresIn: "1d" }
+//     );
+
+//     return res.json({
+//       message: "Login successful",
+//       token,
+//       user: {
+//         id: user.id,
+//         name: user.name,
+//         email: user.email,
+//         role: user.role,
+//       },
+//     });
+//   } catch (err) {
+//     return res.status(500).json({ message: "Server error" });
+//   }
+// };
+
+
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // 1. user check
+    console.log("Login Request:", { email });
+
+    // Check user
     const user = await prisma.user.findUnique({
       where: { email },
     });
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({
+        message: "User not found",
+      });
     }
 
-    // 2. password check
+    console.log("User Found:", user.email);
+
+    // Check password
     const isValid = await bcrypt.compare(password, user.password);
 
     if (!isValid) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res.status(401).json({
+        message: "Invalid credentials",
+      });
     }
 
-    // 3. token create
+    console.log("Password Matched");
+
+    // Create token
     const token = jwt.sign(
-      { id: user.id, name: user.name, email: user.email, role: user.role },
+      {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
       process.env.JWT_SECRET,
-      { expiresIn: "1d" }
+      {
+        expiresIn: "1d",
+      }
     );
 
-    return res.json({
+    return res.status(200).json({
       message: "Login successful",
       token,
       user: {
@@ -195,6 +255,15 @@ export const loginUser = async (req, res) => {
       },
     });
   } catch (err) {
-    return res.status(500).json({ message: "Server error" });
+    console.error("========== LOGIN ERROR ==========");
+    console.error(err);
+    console.error("Error Message:", err.message);
+    console.error("Stack:", err.stack);
+    console.error("=================================");
+
+    return res.status(500).json({
+      message: "Server error",
+      error: err.message,
+    });
   }
 };
