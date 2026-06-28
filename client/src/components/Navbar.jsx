@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { getCurrentUser, logout } from "../services/auth.service";
 
-export default function Navbar() {
+export default function Navbar({ onMenuClick }) {
   const navigate = useNavigate();
   const user = getCurrentUser();
 
@@ -17,7 +17,13 @@ export default function Navbar() {
     <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur">
       <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
-          <button className="grid h-10 w-10 place-items-center rounded-md border border-slate-200 text-slate-700 lg:hidden" type="button" aria-label="Open menu">
+          <button
+            className="grid h-10 w-10 place-items-center rounded-md border border-slate-200 text-slate-700 lg:hidden"
+            onClick={onMenuClick}
+            type="button"
+            aria-label="Open menu"
+            aria-haspopup="dialog"
+          >
             <Menu size={20} />
           </button>
           <div>

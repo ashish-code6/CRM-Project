@@ -1,4 +1,5 @@
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
+import { useState } from "react";
 import { Toaster } from "react-hot-toast";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
@@ -18,15 +19,17 @@ import { getCurrentUser, getToken } from "./services/auth.service";
 import { canCreateLeads, canManageBilling, canManageUsers, canViewAuditLogs } from "./utils/permissions";
 
 function ProtectedRoute() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   if (!getToken()) {
     return <Navigate to="/login" replace />;
   }
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950">
-      <Sidebar />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="min-h-screen lg:pl-72">
-        <Navbar />
+        <Navbar onMenuClick={() => setSidebarOpen(true)} />
         <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <Outlet />
         </main>
