@@ -11,7 +11,16 @@ import invoiceRoutes from "./routes/invoice.routes.js";
 
 const app = express();
 
-app.use(cors());
+const allowedOrigins = process.env.CLIENT_URL
+  ? process.env.CLIENT_URL.split(",").map((origin) => origin.trim())
+  : true;
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use("/api/users", userRoutes);
 app.use("/api/test", testRoutes);
