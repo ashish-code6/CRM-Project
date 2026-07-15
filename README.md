@@ -1,5 +1,9 @@
 # 🚀 CRM System
 
+For Login : username : ashish@gmail.com
+          : Password: 123456
+
+
 A full-stack Customer Relationship Management (CRM) application built using **React**, **Node.js**, **Express.js**, **PostgreSQL**, and **Prisma ORM**.
 
 The application helps organizations manage customer leads, assign them to sales representatives, track user activities, and monitor business performance through a secure role-based system.
